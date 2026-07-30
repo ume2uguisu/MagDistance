@@ -1,0 +1,13 @@
+{
+  "name": "mag-distance",
+  "version": "1.0.0",
+  "description": "2つの磁石の仕様を指定し密着状態から離隔距離までの吸着力を算出しグラフ表示するWebアプリ",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "start": "npx serve ."
+  },
+  "keywords": ["magnet", "physics", "pull-force", "calculator", "simulator"],
+  "author": "ume2uguisu",
+  "license": "MIT"
+}

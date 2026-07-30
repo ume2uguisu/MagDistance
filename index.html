@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MagDistance | 磁石吸着力・離隔距離シミュレーター (Magnet Pull Force Calculator)</title>
+  <meta name="description" content="2つの磁石（ネオジム・フェライト等）および磁石と鉄板の寸法・磁束密度を指定し、密着状態から離隔距離に応じた吸着力（引き合う力・反発力）を計算・グラフ表示するWebアプリケーション。">
+  
+  <!-- OG Tags for Web / Social Sharing -->
+  <meta property="og:title" content="MagDistance - 磁石吸着力・離隔距離シミュレーター">
+  <meta property="og:description" content="磁石の直径・厚み・磁束密度から密着時・任意距離における吸着力をリアルタイム算出＆グラフ描画">
+  <meta property="og:type" content="website">
+
+  <!-- Google Fonts & Chart.js -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="brand">
+      <div class="brand-icon">🧲</div>
+      <div>
+        <h1 class="brand-title">MagDistance</h1>
+        <p class="brand-subtitle">磁石吸着力・離隔距離シミュレーター</p>
+      </div>
+    </div>
+    <div class="nav-links">
+      <a href="https://github.com/ume2uguisu/MagDistance" target="_blank" rel="noopener noreferrer" class="btn-github">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+        GitHub Repository
+      </a>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="container">
+
+    <!-- Top Unit & Mode Selection Toolbar -->
+    <div class="card" style="margin-bottom: 1.5rem; padding: 1rem 1.5rem;">
+      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem;">
+        <div style="display: flex; align-items: center; gap: 1.5rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="font-size: 0.9rem; font-weight: 600; color: var(--text-muted);">力単位:</span>
+            <div class="segmented-control" id="unitControl" style="grid-template-columns: repeat(4, 1fr); width: 280px;">
+              <button class="segmented-btn active" data-unit="N">N (ニュートン)</button>
+              <button class="segmented-btn" data-unit="kgf">kgf</button>
+              <button class="segmented-btn" data-unit="gf">gf</button>
+              <button class="segmented-btn" data-unit="lbf">lbf</button>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="font-size: 0.9rem; font-weight: 600; color: var(--text-muted);">作用:</span>
+            <div class="segmented-control" id="forceModeControl" style="width: 200px;">
+              <button class="segmented-btn active" data-attract="true">吸引 (引き合う)</button>
+              <button class="segmented-btn" data-attract="false">反発 (退け合う)</button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <button id="btnPresetN42" class="btn-sm">標準N42をセット</button>
+          <button id="btnPresetN52" class="btn-sm">強力N52をセット</button>
+          <button id="btnPresetSteel" class="btn-sm">対鉄板モードにセット</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Stats Grid -->
+    <div class="stats-grid">
+      <div class="stat-card highlight">
+        <span class="stat-label">密着時吸着力 (0 mm)</span>
+        <div class="stat-value"><span id="statForce0">0.00</span> <span class="stat-unit" id="unitStat0">kgf</span></div>
+        <div class="stat-subtext" id="statForce0N">0.0 N</div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">1 mm 離隔時</span>
+        <div class="stat-value"><span id="statForce1">0.00</span> <span class="stat-unit" id="unitStat1">kgf</span></div>
+        <div class="stat-subtext" id="statForce1N">0.0 N</div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">5 mm 離隔時</span>
+        <div class="stat-value"><span id="statForce5">0.00</span> <span class="stat-unit" id="unitStat5">kgf</span></div>
+        <div class="stat-subtext" id="statForce5N">0.0 N</div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">10 mm 離隔時</span>
+        <div class="stat-value"><span id="statForce10">0.00</span> <span class="stat-unit" id="unitStat10">kgf</span></div>
+        <div class="stat-subtext" id="statForce10N">0.0 N</div>
+      </div>
+    </div>
+
+    <!-- Dashboard Grid -->
+    <div class="dashboard-grid">
+
+      <!-- Left Column: Input Form Controls -->
+      <aside class="controls-panel">
+        
+        <!-- Magnet A Card -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">
+              <span class="card-title-icon">🔴</span> 磁石 A の仕様
+            </h2>
+          </div>
+          <div class="section-group">
+            <div class="input-group">
+              <label for="presetA">材質 / グレード プリセット</label>
+              <select id="presetA" class="input-control">
+                <option value="N42" selected>ネオジム N42 (標準的 / Br: 1.32 T)</option>
+                <option value="N52">ネオジム N52 (強力 / Br: 1.45 T)</option>
+                <option value="N48">ネオジム N48 (Br: 1.40 T)</option>
+                <option value="N35">ネオジム N35 (普及品 / Br: 1.18 T)</option>
+                <option value="N42SH">ネオジム N42SH (耐熱150℃ / Br: 1.30 T)</option>
+                <option value="SmCo28">サマコバ Sm2Co17 (耐熱300℃ / Br: 1.05 T)</option>
+                <option value="FerriteC8">フェライト C8 (Br: 0.39 T)</option>
+                <option value="AlNiCo5">アルニコ 5 (Br: 1.25 T)</option>
+                <option value="custom">カスタム入力</option>
+              </select>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+              <div class="input-group">
+                <label for="diaA">直径 $D_A$ <span class="unit">[mm]</span></label>
+                <input type="number" id="diaA" class="input-control" value="20" min="1" max="200" step="0.5">
+              </div>
+              <div class="input-group">
+                <label for="thickA">厚み $t_A$ <span class="unit">[mm]</span></label>
+                <input type="number" id="thickA" class="input-control" value="5" min="0.5" max="100" step="0.5">
+              </div>
+            </div>
+
+            <div class="input-group">
+              <label for="brA">残留磁束密度 $B_r$ <span class="unit">[mT]</span></label>
+              <input type="number" id="brA" class="input-control" value="1320" min="100" max="2000" step="10">
+            </div>
+
+            <div class="input-group">
+              <label for="surfBA">表面中心磁束密度 <span class="unit">[mT] (目安)</span></label>
+              <input type="number" id="surfBA" class="input-control" value="300" readonly style="background: rgba(15, 23, 42, 0.4); opacity: 0.85;">
+            </div>
+          </div>
+        </div>
+
+        <!-- Magnet B / Steel Card -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">
+              <span class="card-title-icon">🔵</span> 対象物（磁石B / 鉄板）
+            </h2>
+          </div>
+          <div class="section-group">
+            <div class="input-group">
+              <label for="targetType">対向対象の種類</label>
+              <select id="targetType" class="input-control">
+                <option value="magnet" selected>磁石 B (同径・異径磁石)</option>
+                <option value="steel">鉄板 / 鋼板 (スチールプレート)</option>
+              </select>
+            </div>
+
+            <div id="magnetBControls">
+              <div style="display: flex; justify-content: flex-end; margin-bottom: 0.5rem;">
+                <button id="btnCopyAtoB" class="btn-sm" style="font-size: 0.75rem;">磁石Aの仕様をコピー</button>
+              </div>
+
+              <div class="input-group" style="margin-bottom: 0.75rem;">
+                <label for="presetB">材質 / グレード プリセット</label>
+                <select id="presetB" class="input-control">
+                  <option value="N42" selected>ネオジム N42 (標準的 / Br: 1.32 T)</option>
+                  <option value="N52">ネオジム N52 (強力 / Br: 1.45 T)</option>
+                  <option value="N48">ネオジム N48 (Br: 1.40 T)</option>
+                  <option value="N35">ネオジム N35 (普及品 / Br: 1.18 T)</option>
+                  <option value="N42SH">ネオジム N42SH (耐熱150℃ / Br: 1.30 T)</option>
+                  <option value="SmCo28">サマコバ Sm2Co17 (耐熱300℃ / Br: 1.05 T)</option>
+                  <option value="FerriteC8">フェライト C8 (Br: 0.39 T)</option>
+                  <option value="AlNiCo5">アルニコ 5 (Br: 1.25 T)</option>
+                  <option value="custom">カスタム入力</option>
+                </select>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+                <div class="input-group">
+                  <label for="diaB">直径 $D_B$ <span class="unit">[mm]</span></label>
+                  <input type="number" id="diaB" class="input-control" value="20" min="1" max="200" step="0.5">
+                </div>
+                <div class="input-group">
+                  <label for="thickB">厚み $t_B$ <span class="unit">[mm]</span></label>
+                  <input type="number" id="thickB" class="input-control" value="5" min="0.5" max="100" step="0.5">
+                </div>
+              </div>
+
+              <div class="input-group">
+                <label for="brB">残留磁束密度 $B_r$ <span class="unit">[mT]</span></label>
+                <input type="number" id="brB" class="input-control" value="1320" min="100" max="2000" step="10">
+              </div>
+            </div>
+
+            <div id="steelNotice" style="display: none; padding: 0.75rem; background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.2); border-radius: var(--radius-sm); font-size: 0.8rem; color: var(--accent-cyan);">
+              💡 鉄板（スチールプレート）モードでは、鏡像法（Image Method）を用いて磁石Aと鉄板間の吸着力を評価します。
+            </div>
+          </div>
+        </div>
+
+        <!-- Range Settings Card -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">
+              <span class="card-title-icon">📏</span> 距離計算設定
+            </h2>
+          </div>
+          <div class="section-group">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+              <div class="input-group">
+                <label for="maxGap">最大離隔距離 <span class="unit">[mm]</span></label>
+                <input type="number" id="maxGap" class="input-control" value="30" min="5" max="200" step="5">
+              </div>
+              <div class="input-group">
+                <label for="calcSteps">データ点数</label>
+                <input type="number" id="calcSteps" class="input-control" value="60" min="20" max="200" step="10">
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </aside>
+
+      <!-- Right Column: Visualization & Graph -->
+      <section style="display: flex; flex-direction: column; gap: 1.5rem;">
+
+        <!-- Interactive 2D Visualizer -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">
+              <span class="card-title-icon">👁️</span> 2D 磁石配置・磁場シミュレーション
+            </h2>
+            <span style="font-size: 0.85rem; color: var(--accent-cyan);" id="liveForceDisplay">密着時吸着力: --</span>
+          </div>
+
+          <div class="visualizer-container">
+            <canvas id="visualizerCanvas"></canvas>
+          </div>
+
+          <div class="distance-slider-wrapper">
+            <label for="distanceSlider" style="font-size: 0.85rem; font-weight: 600; min-width: 110px;">
+              離隔距離: <span id="sliderValue" style="color: var(--accent-cyan);">0.0</span> mm
+            </label>
+            <input type="range" id="distanceSlider" min="0" max="30" step="0.2" value="0">
+          </div>
+        </div>
+
+        <!-- Chart Section -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">
+              <span class="card-title-icon">📈</span> 離隔距離 vs 吸着力 グラフ
+            </h2>
+            <div class="chart-toolbar">
+              <button id="btnToggleLog" class="btn-sm">対数表示: OFF</button>
+              <button id="btnExportCSV" class="btn-sm">📥 CSV保存</button>
+            </div>
+          </div>
+
+          <div class="chart-wrapper">
+            <canvas id="pullForceChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Detailed Data Table Card -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">
+              <span class="card-title-icon">📋</span> 計算数値データ一覧
+            </h2>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table" id="dataTable">
+              <thead>
+                <tr>
+                  <th style="text-align: center;">離隔距離 (mm)</th>
+                  <th style="text-align: right;">吸着力 (N)</th>
+                  <th style="text-align: right;">吸着力 (kgf)</th>
+                  <th style="text-align: right;">吸着力 (gf)</th>
+                  <th style="text-align: right;">軸上磁束密度 B(z) (mT)</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody">
+                <!-- Javascript にて動的挿入 -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>© 2026 MagDistance - Open Source Magnetic Force Simulator</p>
+    <p style="margin-top: 0.5rem;">
+      <a href="https://github.com/ume2uguisu/MagDistance" target="_blank" rel="noopener noreferrer">GitHub リポジトリ</a> | 
+      物理計算モデル: Gauss-Legendre Quadrature Equivalent Surface Charge Model (Furlani) & Image Charge Theory
+    </p>
+  </footer>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast">メッセージ</div>
+
+  <!-- Main JavaScript App -->
+  <script type="module" src="app.js"></script>
+
+</body>
+</html>
