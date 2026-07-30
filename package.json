@@ -5,7 +5,8 @@
   "type": "module",
   "main": "app.js",
   "scripts": {
-    "start": "npx serve ."
+    "start": "npx serve .",
+    "test": "node test.js"
   },
   "keywords": ["magnet", "physics", "pull-force", "calculator", "simulator"],
   "author": "ume2uguisu",
