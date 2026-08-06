@@ -337,17 +337,23 @@ function renderResults() {
     }
   };
 
+  const getSubValStr = (res) => {
+    return state.currentUnit === 'N'
+      ? `${res.forceKgf.toFixed(2)} kgf`
+      : `${res.forceN.toFixed(1)} N`;
+  };
+
   elements.statForce0.textContent = getForceVal(f0);
-  elements.statForce0N.textContent = `${f0.forceN.toFixed(1)} N`;
+  elements.statForce0N.textContent = getSubValStr(f0);
 
   elements.statForce1.textContent = getForceVal(f1);
-  elements.statForce1N.textContent = `${f1.forceN.toFixed(1)} N`;
+  elements.statForce1N.textContent = getSubValStr(f1);
 
   elements.statForce5.textContent = getForceVal(f5);
-  elements.statForce5N.textContent = `${f5.forceN.toFixed(1)} N`;
+  elements.statForce5N.textContent = getSubValStr(f5);
 
   elements.statForce10.textContent = getForceVal(f10);
-  elements.statForce10N.textContent = `${f10.forceN.toFixed(1)} N`;
+  elements.statForce10N.textContent = getSubValStr(f10);
 
   renderDataTable();
   updateChart();
