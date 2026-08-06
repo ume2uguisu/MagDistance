@@ -532,29 +532,31 @@ function drawVisualizer() {
   const totalWidth_px = thickA_px + gap_px + thickB_px;
   const startX = (w - totalWidth_px) / 2;
 
+  const offsetY_px = 18 * window.devicePixelRatio;
+
   const xA = startX;
-  const yA = centerY - diaA_px / 2;
+  const yA = centerY - diaA_px / 2 - offsetY_px; // 磁石Aを上方にオフセット
 
   const xB = startX + thickA_px + gap_px;
-  const yB = centerY - diaB_px / 2;
+  const yB = centerY - diaB_px / 2 + offsetY_px / 2; // 磁石Bを中心〜やや下方に配置
 
-  // 1. 磁極線の描画 (ヨーク効果をビジュアル反映)
-  if (gap_mm < 25) {
+  // 1. 磁極線の描画 (段違いオフセットに応じた滑らかなベジェ曲線)
+  if (gap_mm < 35) {
     ctx.save();
-    const lineCount = (yokeA !== 'none') ? 9 : 6;
-    const maxGapAlpha = Math.max(0.1, 1 - (gap_mm / 25));
+    const lineCount = (yokeA !== 'none' || yokeB !== 'none') ? 9 : 6;
+    const maxGapAlpha = Math.max(0.12, 1 - (gap_mm / 35));
 
     for (let i = 0; i < lineCount; i++) {
       const offsetFactor = (i / (lineCount - 1)) - 0.5;
-      const y1 = centerY + offsetFactor * (diaA_px * 0.85);
-      const y2 = centerY + offsetFactor * (diaB_px * 0.85);
+      const y1 = (yA + diaA_px / 2) + offsetFactor * (diaA_px * 0.8);
+      const y2 = (yB + diaB_px / 2) + offsetFactor * (diaB_px * 0.8);
 
       const midX = (xA + thickA_px + xB) / 2;
-      const curveHeight = state.isAttract ? 0 : offsetFactor * gap_px * 1.2;
+      const midY = (y1 + y2) / 2;
 
       ctx.beginPath();
       ctx.moveTo(xA + thickA_px, y1);
-      ctx.quadraticCurveTo(midX, centerY + curveHeight, xB, y2);
+      ctx.quadraticCurveTo(midX, midY, xB, y2);
 
       const strokeColor = state.isAttract ? 'rgba(6, 182, 212, ' : 'rgba(239, 68, 68, ';
       ctx.strokeStyle = `${strokeColor}${maxGapAlpha})`;
@@ -565,7 +567,7 @@ function drawVisualizer() {
     ctx.restore();
   }
 
-  // 2. 磁石 A の描画 (ヨーク描画対応)
+  // 2. 磁石 A の描画 (上方にオフセット)
   drawMagnetWithYoke(ctx, xA, yA, thickA_px, diaA_px, 'N', 'S', '🔴 磁石 A', yokeA, 'left');
 
   // 3. 磁石 B または 鉄板の描画
@@ -577,7 +579,7 @@ function drawVisualizer() {
     drawSteelPlate(ctx, xB, yB, thickB_px, diaB_px, '⚙️ 鉄板');
   }
 
-  // 4. 距離寸法表示
+  // 4. 離隔距離の寸法ガイド線表示 (段違いの位置関係を視覚化)
   ctx.save();
   ctx.strokeStyle = '#06b6d4';
   ctx.fillStyle = '#06b6d4';
@@ -585,14 +587,23 @@ function drawVisualizer() {
   ctx.font = `${11 * window.devicePixelRatio}px Inter, sans-serif`;
   ctx.textAlign = 'center';
 
-  const lineY = centerY + Math.max(diaA_px, diaB_px) / 2 + 18 * window.devicePixelRatio;
+  const lineY = Math.max(yA + diaA_px, yB + diaB_px) + 16 * window.devicePixelRatio;
   
+  // 水平距離指示線
   ctx.beginPath();
-  ctx.moveTo(xA + thickA_px, lineY);
+  ctx.moveTo(xA + thickA_px, yA + diaA_px);
+  ctx.lineTo(xA + thickA_px, lineY);
+  ctx.moveTo(xB, yB + diaB_px);
   ctx.lineTo(xB, lineY);
   ctx.stroke();
 
-  ctx.fillText(`${gap_mm.toFixed(1)} mm`, (xA + thickA_px + xB) / 2, lineY + 14 * window.devicePixelRatio);
+  ctx.beginPath();
+  ctx.setLineDash([3, 3]);
+  ctx.moveTo(xA + thickA_px, lineY - 6 * window.devicePixelRatio);
+  ctx.lineTo(xB, lineY - 6 * window.devicePixelRatio);
+  ctx.stroke();
+
+  ctx.fillText(`面間離隔: ${gap_mm.toFixed(1)} mm`, (xA + thickA_px + xB) / 2, lineY + 12 * window.devicePixelRatio);
   ctx.restore();
 }
 
