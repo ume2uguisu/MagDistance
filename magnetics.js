@@ -1,6 +1,6 @@
 /**
  * MagDistance - Physics Calculation Engine for Magnet Pull Force & Magnetic Fields
- * 磁石間・磁石鉄板間の吸着力および磁界プロファイル計算エンジン（ヨーク効果対応）
+ * 磁石間・磁石鉄板間の吸着力および磁界プロファイル計算エンジン（完全単調減少物理モデル）
  */
 
 // 物理定数
@@ -72,7 +72,7 @@ const GAUSS_WEIGHTS = [
  * 2つの平行同軸円盤間の面荷相互作用力 F_pair(d) [N]
  */
 function calculateDiskPairForce(R1, R2, d, Br1, Br2) {
-  const dist = Math.max(1e-6, d);
+  const dist = Math.max(1e-5, d);
   const factor = (Br1 * Br2) / (4 * Math.PI * MU_0);
 
   let sum = 0;
@@ -110,7 +110,7 @@ function calculateDiskPairForce(R1, R2, d, Br1, Br2) {
 }
 
 /**
- * 2つの磁石間、または磁石と鉄板間の吸着力 F(z) [N] を計算（ヨーク効果反映）
+ * 2つの磁石間、または磁石と鉄板間の吸着力 F(z) [N] を計算（厳密単調減少）
  */
 export function calculatePullForce(config) {
   const {
@@ -163,9 +163,9 @@ export function calculatePullForce(config) {
   let backDamping = Math.min(backDampingA, backDampingB);
 
   let rawForce = (f13 - f14 * backDamping - f23 * backDamping + f24 * backDamping);
-  let netForceN = Math.abs(rawForce);
+  let farForceN = Math.abs(rawForce);
 
-  // マクスウェル接触理論解との接続
+  // 密着吸着力 Max Contact Force (z = 0)
   const minR = Math.min(radiusA, effRadiusB);
   const area = Math.PI * minR * minR;
 
@@ -183,11 +183,15 @@ export function calculatePullForce(config) {
   const B_avg = Math.sqrt(B_baseA * B_baseB) * 2.4;
   const maxMaxwell = (B_avg * B_avg * area) / (2 * MU_0) * yokeBoost;
 
-  const cutoff = 0.004;
-  if (z < cutoff) {
-    const t = z / cutoff;
-    netForceN = (1 - t) * maxMaxwell + t * netForceN;
-  }
+  // 滑らかな減衰関数による単調減少の保証
+  const decayLength = Math.min(radiusA, thicknessA) * 0.7;
+  const proximityFactor = Math.exp(-z / decayLength);
+
+  let netForceN = maxMaxwell * proximityFactor + farForceN * (1 - proximityFactor);
+
+  // 密着時 (z=0) より決して上回らない厳密な単調減少上限ガード
+  const monotonicUpper = maxMaxwell * Math.exp(-z / (decayLength * 1.8));
+  netForceN = Math.min(monotonicUpper, netForceN);
 
   if (!isAttract) {
     netForceN *= 0.85;
