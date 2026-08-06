@@ -566,13 +566,13 @@ function drawVisualizer() {
   }
 
   // 2. 磁石 A の描画 (ラベル文字は上方にオフセット)
-  drawMagnetWithYoke(ctx, xA, yA, thickA_px, diaA_px, 'N', 'S', '🔴 磁石 A', yokeA, 'left', 'top');
+  drawMagnetWithYoke(ctx, xA, yA, thickA_px, diaA_px, 'N', 'S', '磁石 A', yokeA, 'left', 'top');
 
   // 3. 磁石 B または 鉄板の描画 (ラベル文字は下方にオフセット)
   if (state.targetType === 'magnet') {
     const northPole = state.isAttract ? 'S' : 'N';
     const southPole = state.isAttract ? 'N' : 'S';
-    drawMagnetWithYoke(ctx, xB, yB, thickB_px, diaB_px, northPole, southPole, '🔵 磁石 B', yokeB, 'right', 'bottom');
+    drawMagnetWithYoke(ctx, xB, yB, thickB_px, diaB_px, northPole, southPole, '磁石 B', yokeB, 'right', 'bottom');
   } else {
     drawSteelPlate(ctx, xB, yB, thickB_px, diaB_px, '⚙️ 鉄板', 'bottom');
   }
