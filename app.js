@@ -427,14 +427,14 @@ function initChart() {
           padding: 12,
           displayColors: false,
           callbacks: {
-            title: (items) => `離隔距離: ${items[0].label} mm`,
+            title: (items) => `距離: ${items[0].label} mm`,
             label: (item) => `吸着力: ${item.formattedValue} ${state.currentUnit}`
           }
         }
       },
       scales: {
         x: {
-          title: { display: true, text: '離隔距離 (mm)', color: '#94a3b8', font: { size: 12, weight: 'bold' } },
+          title: { display: true, text: '距離 (mm)', color: '#94a3b8', font: { size: 12, weight: 'bold' } },
           grid: { color: 'rgba(255, 255, 255, 0.06)' },
           ticks: { color: '#94a3b8' }
         },
