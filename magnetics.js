@@ -1,6 +1,6 @@
 /**
  * MagDistance - Physics Calculation Engine for Magnet Pull Force & Magnetic Fields
- * 磁石間・磁石鉄板間の吸着力および磁界プロファイル計算エンジン
+ * 磁石間・磁石鉄板間の吸着力および磁界プロファイル計算エンジン（ヨーク効果対応）
  */
 
 // 物理定数
@@ -8,7 +8,6 @@ export const MU_0 = 4 * Math.PI * 1e-7; // 真空の透磁率 [H/m or N/A^2]
 
 /**
  * 主要な磁石材料のプリセット定義
- * Br: 残留磁束密度 [Tesla]
  */
 export const MAGNET_PRESETS = {
   'N52': { name: 'ネオジム N52 (最高磁力)', Br: 1.45, tempMax: 80, type: 'neodymium' },
@@ -23,19 +22,38 @@ export const MAGNET_PRESETS = {
 };
 
 /**
+ * ヨーク（磁性体ケース/バックプレート）の型定義
+ */
+export const YOKE_TYPES = {
+  'none': { name: 'なし (ベア磁石)', boostFactor: 1.0, desc: '通常の裸磁石' },
+  'back': { name: '背面ヨーク (鉄板バックプレート)', boostFactor: 1.35, desc: '背面への漏れ磁束を前面に集中' },
+  'cup': { name: 'キャップ/カップ型ヨーク', boostFactor: 2.2, desc: '背面および側面を鉄ケースで覆い前面に超集中' }
+};
+
+/**
  * 円柱磁石の表面中心における磁束密度 B_center [T] を算出
  */
-export function calculateSurfaceB(radius, thickness, Br) {
+export function calculateSurfaceB(radius, thickness, Br, yokeType = 'none') {
   if (radius <= 0 || thickness <= 0 || Br <= 0) return 0;
-  return (Br / 2) * (thickness / Math.sqrt(radius * radius + thickness * thickness));
+  const baseB = (Br / 2) * (thickness / Math.sqrt(radius * radius + thickness * thickness));
+  
+  if (yokeType === 'back') {
+    return baseB * 1.25;
+  } else if (yokeType === 'cup') {
+    return baseB * 1.65;
+  }
+  return baseB;
 }
 
 /**
  * 表面中心磁束密度 B_center から残留磁束密度 Br [T] を逆算
  */
-export function calculateBrFromSurfaceB(radius, thickness, Bcenter) {
+export function calculateBrFromSurfaceB(radius, thickness, Bcenter, yokeType = 'none') {
   if (radius <= 0 || thickness <= 0 || Bcenter <= 0) return 0;
-  return 2 * Bcenter * (Math.sqrt(radius * radius + thickness * thickness) / thickness);
+  let rawBr = 2 * Bcenter * (Math.sqrt(radius * radius + thickness * thickness) / thickness);
+  if (yokeType === 'back') rawBr /= 1.25;
+  if (yokeType === 'cup') rawBr /= 1.65;
+  return rawBr;
 }
 
 /**
@@ -92,17 +110,19 @@ function calculateDiskPairForce(R1, R2, d, Br1, Br2) {
 }
 
 /**
- * 2つの磁石間、または磁石と鉄板間の吸着力 F(z) [N] を計算
+ * 2つの磁石間、または磁石と鉄板間の吸着力 F(z) [N] を計算（ヨーク効果反映）
  */
 export function calculatePullForce(config) {
   const {
     radiusA,
     thicknessA,
     BrA,
+    yokeA = 'none',
     targetType = 'magnet',
     radiusB = radiusA,
     thicknessB = thicknessA,
     BrB = BrA,
+    yokeB = 'none',
     isAttract = true,
     gap = 0
   } = config;
@@ -111,48 +131,66 @@ export function calculatePullForce(config) {
   let effThicknessB = thicknessB;
   let effBrB = BrB;
 
-  // 鉄板（スチールプレート）の場合、鏡像法（Image Method）を適用
   if (targetType === 'steel') {
     effRadiusB = radiusA;
     effThicknessB = thicknessA;
-    effBrB = BrA * 1.12; // 軟鉄板の透磁率集中効果
+    effBrB = BrA * 1.12;
+  }
+
+  let effBrA = BrA;
+  if (yokeA === 'back') effBrA *= 1.25;
+  if (yokeA === 'cup') effBrA *= 1.45;
+
+  if (targetType === 'magnet') {
+    if (yokeB === 'back') effBrB *= 1.25;
+    if (yokeB === 'cup') effBrB *= 1.45;
   }
 
   const z = Math.max(0, gap);
 
-  // 4つの面対間距離
-  const d13 = z;                           // 近接面 - 近接面
-  const d14 = z + effThicknessB;           // 近接面 - 遠隔面
-  const d23 = z + thicknessA;              // 遠隔面 - 近接面
-  const d24 = z + thicknessA + effThicknessB; // 遠隔面 - 遠隔面
+  const d13 = z;
+  const d14 = z + effThicknessB;
+  const d23 = z + thicknessA;
+  const d24 = z + thicknessA + effThicknessB;
 
-  const f13 = calculateDiskPairForce(radiusA, effRadiusB, d13, BrA, effBrB);
-  const f14 = calculateDiskPairForce(radiusA, effRadiusB, d14, BrA, effBrB);
-  const f23 = calculateDiskPairForce(radiusA, effRadiusB, d23, BrA, effBrB);
-  const f24 = calculateDiskPairForce(radiusA, effRadiusB, d24, BrA, effBrB);
+  const f13 = calculateDiskPairForce(radiusA, effRadiusB, d13, effBrA, effBrB);
+  const f14 = calculateDiskPairForce(radiusA, effRadiusB, d14, effBrA, effBrB);
+  const f23 = calculateDiskPairForce(radiusA, effRadiusB, d23, effBrA, effBrB);
+  const f24 = calculateDiskPairForce(radiusA, effRadiusB, d24, effBrA, effBrB);
 
-  // 面荷重ね合わせの合力
-  let rawForce = (f13 - f14 - f23 + f24);
+  let backDampingA = (yokeA !== 'none') ? 0.2 : 1.0;
+  let backDampingB = (yokeB !== 'none') ? 0.2 : 1.0;
+  let backDamping = Math.min(backDampingA, backDampingB);
+
+  let rawForce = (f13 - f14 * backDamping - f23 * backDamping + f24 * backDamping);
   let netForceN = Math.abs(rawForce);
 
-  // 密着・近接領域での形状効果とマクスウェル応力 (Maxwell Stress Coupling)
-  // 近接時 z -> 0 では、極面全域の平均磁界 B_avg により吸着力が最大化
+  // マクスウェル接触理論解との接続
   const minR = Math.min(radiusA, effRadiusB);
   const area = Math.PI * minR * minR;
 
-  // 近接領域補正 (0 ~ 2mm)
-  if (z < 0.003) {
-    // マクスウェル接触理論吸着力 F_max = (B_eff^2 * A) / (2 * MU_0)
-    const B_effA = BrA * (thicknessA / Math.sqrt(radiusA * radiusA + thicknessA * thicknessA));
-    const B_effB = effBrB * (effThicknessB / Math.sqrt(effRadiusB * effRadiusB + effThicknessB * effThicknessB));
-    
-    // 近接時における極面相互の平均磁界
-    const B_avg = Math.sqrt(B_effA * B_effB) * 1.25;
-    const maxMaxwell = (B_avg * B_avg * area) / (2 * MU_0);
+  const B_baseA = calculateSurfaceB(radiusA, thicknessA, BrA, 'none');
+  const B_baseB = (targetType === 'steel') ? B_baseA * 1.1 : calculateSurfaceB(effRadiusB, effThicknessB, BrB, 'none');
 
-    // z=0 に近づくにつれてマクスウェル解へ漸近
-    const t = z / 0.003;
+  let yokeBoost = 1.0;
+  if (yokeA === 'back') yokeBoost = 1.35;
+  if (yokeA === 'cup') yokeBoost = 2.2;
+  if (targetType === 'magnet') {
+    if (yokeB === 'back') yokeBoost *= 1.25;
+    if (yokeB === 'cup') yokeBoost *= 1.8;
+  }
+
+  const B_avg = Math.sqrt(B_baseA * B_baseB) * 2.4;
+  const maxMaxwell = (B_avg * B_avg * area) / (2 * MU_0) * yokeBoost;
+
+  const cutoff = 0.004;
+  if (z < cutoff) {
+    const t = z / cutoff;
     netForceN = (1 - t) * maxMaxwell + t * netForceN;
+  }
+
+  if (!isAttract) {
+    netForceN *= 0.85;
   }
 
   const forceKgf = netForceN / 9.80665;
@@ -193,10 +231,14 @@ export function generateDistanceForceCurve(config, minGap = 0, maxGap = 0.05, st
 /**
  * 軸上距離 z における磁束密度 B_z [mT] の計算
  */
-export function calculateAxialBField(radius, thickness, Br, zMeters) {
+export function calculateAxialBField(radius, thickness, Br, zMeters, yokeType = 'none') {
   const z = Math.max(0, zMeters);
   const term1 = (z + thickness) / Math.sqrt(radius * radius + (z + thickness) ** 2);
   const term2 = z / Math.sqrt(radius * radius + z * z);
-  const B_tesla = (Br / 2) * (term1 - term2);
-  return B_tesla * 1000; // mT に変換
+  let B_tesla = (Br / 2) * (term1 - term2);
+
+  if (yokeType === 'back') B_tesla *= 1.25;
+  if (yokeType === 'cup') B_tesla *= 1.65;
+
+  return B_tesla * 1000;
 }
