@@ -65,6 +65,7 @@ const elements = {
   diaB: document.getElementById('diaB'),
   thickB: document.getElementById('thickB'),
   brB: document.getElementById('brB'),
+  surfBB: document.getElementById('surfBB'),
 
   // Range Settings
   maxGap: document.getElementById('maxGap'),
@@ -238,13 +239,20 @@ function setPreset(target, presetKey) {
  * 表面中心磁束密度の更新表示
  */
 function updateSurfaceBDisplay(target) {
-  if (target === 'A') {
+  if (target === 'A' && elements.surfBA) {
     const r = (parseFloat(elements.diaA.value) || 20) / 2000;
     const t = (parseFloat(elements.thickA.value) || 5) / 1000;
     const Br = (parseFloat(elements.brA.value) || 1320) / 1000;
     const yoke = elements.yokeA.value;
     const Bsurf = calculateSurfaceB(r, t, Br, yoke);
     elements.surfBA.value = Math.round(Bsurf * 1000);
+  } else if (target === 'B' && elements.surfBB) {
+    const r = (parseFloat(elements.diaB.value) || 20) / 2000;
+    const t = (parseFloat(elements.thickB.value) || 5) / 1000;
+    const Br = (parseFloat(elements.brB.value) || 1320) / 1000;
+    const yoke = elements.yokeB.value;
+    const Bsurf = calculateSurfaceB(r, t, Br, yoke);
+    elements.surfBB.value = Math.round(Bsurf * 1000);
   }
 }
 
