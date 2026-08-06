@@ -189,18 +189,20 @@ function setupEventListeners() {
   // 距離設定変更
   elements.maxGap.addEventListener('input', () => {
     const maxVal = parseFloat(elements.maxGap.value) || 30;
-    elements.slider.max = maxVal;
+    if (elements.slider) elements.slider.max = maxVal;
     recalculateAll();
   });
   elements.calcSteps.addEventListener('change', recalculateAll);
 
-  // 離隔距離スライダー
-  elements.slider.addEventListener('input', (e) => {
-    state.currentSliderGapMm = parseFloat(e.target.value);
-    elements.sliderValue.textContent = state.currentSliderGapMm.toFixed(1);
-    drawVisualizer();
-    updateLiveForceDisplay();
-  });
+  // 距離スライダー
+  if (elements.slider) {
+    elements.slider.addEventListener('input', (e) => {
+      state.currentSliderGapMm = parseFloat(e.target.value);
+      if (elements.sliderValue) elements.sliderValue.textContent = state.currentSliderGapMm.toFixed(1);
+      drawVisualizer();
+      updateLiveForceDisplay();
+    });
+  }
 
   // グラフオプション
   elements.btnToggleLog.addEventListener('click', () => {
@@ -719,6 +721,7 @@ function drawSteelPlate(ctx, x, y, width, height, label, labelPos = 'bottom') {
  * リアルタイム表示更新
  */
 function updateLiveForceDisplay() {
+  if (!elements.liveForceDisplay) return;
   const config = getConfigFromInputs();
   const gapM = state.currentSliderGapMm / 1000;
   const res = calculatePullForce({ ...config, gap: gapM });
