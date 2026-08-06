@@ -119,13 +119,19 @@ body {
 }
 
 .dashboard-grid {
-  display: grid;
-  grid-template-columns: 360px 1fr;
-  gap: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
-@media (max-width: 1024px) {
-  .dashboard-grid {
+.controls-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .controls-panel {
     grid-template-columns: 1fr;
   }
 }
@@ -166,13 +172,6 @@ body {
 
 .card-title-icon {
   color: var(--accent-cyan);
-}
-
-/* Controls Column */
-.controls-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
 }
 
 .section-group {
