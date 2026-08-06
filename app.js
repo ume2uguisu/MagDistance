@@ -483,6 +483,7 @@ function updateChart() {
  */
 function resizeCanvas() {
   const canvas = elements.canvas;
+  if (!canvas) return;
   const rect = canvas.getBoundingClientRect();
   canvas.width = rect.width * window.devicePixelRatio;
   canvas.height = rect.height * window.devicePixelRatio;
@@ -494,6 +495,7 @@ function resizeCanvas() {
  */
 function drawVisualizer() {
   const canvas = elements.canvas;
+  if (!canvas) return;
   const ctx = canvas.getContext('2d');
   const w = canvas.width;
   const h = canvas.height;
