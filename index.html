@@ -231,25 +231,6 @@
           </div>
         </div>
 
-        <!-- Range Settings Card -->
-        <div class="card">
-          <div class="card-header">
-            <h2 class="card-title">
-              <span class="card-title-icon">📏</span> 距離計算設定
-            </h2>
-          </div>
-          <div class="section-group">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-              <div class="input-group">
-                <label for="maxGap">最大距離 <span class="unit">[mm]</span></label>
-                <input type="number" id="maxGap" class="input-control" value="30" min="5" max="200" step="5">
-              </div>
-              <div class="input-group">
-                <label for="calcSteps">データ点数</label>
-                <input type="number" id="calcSteps" class="input-control" value="60" min="20" max="200" step="10">
-              </div>
-            </div>
-          </div>
         </div>
 
       </aside>
@@ -292,6 +273,23 @@
 
           <div class="chart-wrapper">
             <canvas id="pullForceChart"></canvas>
+          </div>
+
+          <!-- 距離計算設定 (2Dシミュレーションと同様のインラインスタイル) -->
+          <div class="distance-slider-wrapper" style="margin-top: 1.25rem; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem;">
+            <div style="font-size: 0.85rem; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 0.4rem;">
+              <span>📏</span> 距離計算設定
+            </div>
+            <div style="display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap;">
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <label for="maxGap" style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">最大距離 <span class="unit" style="color: var(--accent-cyan); font-size: 0.75rem;">[mm]</span>:</label>
+                <input type="number" id="maxGap" class="input-control" value="30" min="5" max="200" step="5" style="width: 80px; padding: 0.35rem 0.6rem; font-size: 0.85rem;">
+              </div>
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <label for="calcSteps" style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">データ点数:</label>
+                <input type="number" id="calcSteps" class="input-control" value="60" min="20" max="200" step="10" style="width: 80px; padding: 0.35rem 0.6rem; font-size: 0.85rem;">
+              </div>
+            </div>
           </div>
         </div>
 
