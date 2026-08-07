@@ -12,50 +12,11 @@
   - 等価磁荷モデル (Equivalent Magnetic Surface Charge Model) & ガウス＝ルジャンドル数値積分による高精度な吸引力/反発力算出
   - 鉄板（スチールプレート）に対する鏡像法 (Image Charge Method) 吸着力算出
   - 表面中心磁束密度 $B_0$ と残留磁束密度 $B_r$ の自動相互変換計算
-- **インタラクティブUI & レスポンシブデザイン**:
-  - モダンなダークテーマ、グラスモフィズム、グラデーションカラー
-  - クイック統計カード（密着時、1mm, 5mm, 10mm 離れた時の吸着力）
-  - 単位切り替え（N, kgf, gf, lbf）
-  - 作用切り替え（吸引 / 反発）
-- **2D 磁場ビジュアルアニメーション**:
-  - 磁石の実際の寸法比率を描画し、距離スライダーに連動して磁力線（Magnetic Flux Lines）を動的にアニメーション表示
 - **グラフ＆数値データ出力**:
   - Chart.js による距離 vs 吸着力カーブプロット（線形 / 対数スケール切り替え）
   - 詳細計算数値テーブル & 1クリックでの CSV ダウンロードエクスポート
 
----
 
-## 🚀 GitHub Pages での公開方法 (Deployment Guide)
-
-このWebアプリは純粋な HTML5 + Modern ES JavaScript + CSS で構築されているため、GitHub リポジトリの **main** ブランチの root から直接 GitHub Pages で即座にホスティングできます。
-
-### 公開ステップ
-
-1. **GitHub リポジトリの設定を開く**:
-   GitHub で [`https://github.com/ume2uguisu/MagDistance`](https://github.com/ume2uguisu/MagDistance) にアクセスし、上部タブの **Settings** をクリックします。
-
-2. **Pages セクションの選択**:
-   左側メニューの **Pages** （Build and deployment）をクリックします。
-
-3. **Source の設定**:
-   - **Source**: `Deploy from a branch` を選択します。
-   - **Branch**: `main` ブランチ、フォルダは `/ (root)` を選択して **Save** をクリックします。
-
-4. **公開完了**:
-   数分以内に GitHub Pages へのビルドが完了し、指定の URL（例: `https://ume2uguisu.github.io/MagDistance/`）でWebアプリが世界中に公開されます！
-
----
-
-## 💻 ローカル開発・確認方法
-
-ブラウザで `index.html` を直接開くか、ローカルWebサーバー（VS Code Live Server または python / node.js サーバー）を起動して確認できます。
-
-```bash
-# Node.js npx 経由でローカルサーバー起動例
-npx serve .
-```
-
----
 
 ## 📄 ライセンス
 
