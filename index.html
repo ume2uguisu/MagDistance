@@ -41,12 +41,12 @@
   <main class="container">
 
     <!-- Top Unit & Mode Selection Toolbar -->
-    <div class="card" style="margin-bottom: 1.5rem; padding: 1rem 1.5rem;">
-      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem;">
-        <div style="display: flex; align-items: center; gap: 1.5rem;">
-          <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <span style="font-size: 0.9rem; font-weight: 600; color: var(--text-muted);">力単位:</span>
-            <div class="segmented-control" id="unitControl" style="grid-template-columns: repeat(4, 1fr); width: 220px;">
+    <div class="card toolbar-card">
+      <div class="toolbar-container">
+        <div class="toolbar-controls">
+          <div class="control-item">
+            <span class="control-label">力単位:</span>
+            <div class="segmented-control unit-control" id="unitControl">
               <button class="segmented-btn" data-unit="N">N</button>
               <button class="segmented-btn active" data-unit="kgf">kgf</button>
               <button class="segmented-btn" data-unit="gf">gf</button>
@@ -54,16 +54,16 @@
             </div>
           </div>
 
-          <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <span style="font-size: 0.9rem; font-weight: 600; color: var(--text-muted);">作用:</span>
-            <div class="segmented-control" id="forceModeControl" style="width: 140px;">
+          <div class="control-item">
+            <span class="control-label">作用:</span>
+            <div class="segmented-control force-control" id="forceModeControl">
               <button class="segmented-btn active" data-attract="true">吸引</button>
               <button class="segmented-btn" data-attract="false">反発</button>
             </div>
           </div>
         </div>
 
-        <div>
+        <div class="toolbar-presets">
           <button id="btnPresetN42" class="btn-sm">標準N42をセット</button>
           <button id="btnPresetCapYoke" class="btn-sm">キャップヨーク付をセット</button>
           <button id="btnPresetSteel" class="btn-sm">対鉄板モードにセット</button>
