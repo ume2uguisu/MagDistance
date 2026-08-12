@@ -20,4 +20,4 @@
 
 ## 📄 ライセンス
 
-[MIT License]([LICENSE](https://opensource.org/license/mit))
+[MIT License](https://opensource.org/license/mit)
