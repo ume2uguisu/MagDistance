@@ -6,7 +6,7 @@
 
 ---
 
-## 🌟 主な機能
+## 主な機能
 
 - **物理計算モデル**:
   - 等価磁荷モデル (Equivalent Magnetic Surface Charge Model) & ガウス＝ルジャンドル数値積分による高精度な吸引力/反発力算出
@@ -20,4 +20,4 @@
 
 ## 📄 ライセンス
 
-[MIT License](LICENSE)
+[MIT License](https://opensource.org/license/mit)
