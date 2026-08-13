@@ -18,7 +18,7 @@
 
 
 
-## 📄 ライセンス
+## ライセンス
 
 © 2026 うぐいす（@ume2uguisu）  
 [MIT License](https://opensource.org/license/mit)
